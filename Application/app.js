@@ -1,14 +1,16 @@
 import { App } from '@slack/bolt';
-import rewardUsers from '../Domain/Service/RewardService';
+import Logger from '../Infrastructure/Logger';
+import { rewardUsers, getLeaderBoard } from '../Domain/Service/RewardService';
+import LeaderBoardMessage from './Messages/LeaderboardMessage';
+import RewardGivenMessage from './Messages/RewardGivenMessage';
+import RewardReceiveMessage from './Messages/RewardReceiveMessage';
+import LeaderboardDTO from '../Domain/DTO/LeaderboardDTO';
 
-// Initializes your app with your bot token and signing secret
 const app = new App({
   token: process.env.SLACK_BOT_TOKEN,
   signingSecret: process.env.SLACK_SIGNING_SECRET,
 });
 
-
-// Listens to incoming messages that contain "hello"
 app.message(':taco:', async ({ message, say, context }) => {
   let rewardsAmount = 0;
   const users = [];
@@ -31,21 +33,33 @@ app.message(':taco:', async ({ message, say, context }) => {
       return;
     }
     const usersAsString = response.map((user) => `<@${user}>`);
-    await app.client.chat.postMessage({
-      token: context.botToken,
-      channel: message.user,
-      text: `Thanks <@${message.user}> for giving :taco: to ${usersAsString.join(', ')} !`,
-    });
+    await app.client.chat.postMessage(RewardGivenMessage({ context, message, usersAsString }));
 
     response.forEach(async (user) => {
-      await app.client.chat.postMessage({
-        token: context.botToken,
-        channel: user,
-        text: `You got :taco: from <@${message.user}> !`,
-      });
+      await app.client.chat.postMessage(RewardReceiveMessage({ user, message, context }));
     });
   }).catch(async (error) => {
     say(error.message || error);
+  });
+});
+
+app.command('/show-tacos', async ({
+  say, ack, context, payload,
+}) => {
+  ack();
+
+  getLeaderBoard().then(({ daily, monthly }) => {
+    app.client.chat.postEphemeral(LeaderBoardMessage({
+      ...LeaderboardDTO({ daily, monthly }),
+      context,
+      payload,
+    })).catch(error => {
+      Logger.error(error, [{ context, payload }]);
+      say('sorka! coś nie pykło.');
+    });
+  }).catch(error => {
+    Logger.error(error, [{ context, payload }]);
+    say('sorka! coś nie pykło.');
   });
 });
 

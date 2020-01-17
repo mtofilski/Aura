@@ -66,6 +66,20 @@ const rewardUsers = async (giver, receivers, amount) => {
   return uniqueReceivers;
 };
 
+const getLeaderBoard = async () => {
+  return {
+    daily: {
+      givers: await GiverViewAPI.loadDaily(),
+      receivers: await ReceiverViewAPI.loadDaily(),
+    },
+    monthly: {
+      givers: await GiverViewAPI.loadMonthly(),
+      receivers: await ReceiverViewAPI.loadMonthly(),
+    },
+  };
+};
+
 export {
-  rewardUsers as default,
+  rewardUsers,
+  getLeaderBoard,
 };

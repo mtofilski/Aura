@@ -14,10 +14,13 @@
     "esm": "^3.2.25",
     "express": "~4.16.1",
     "http-errors": "~1.6.3",
+    "moment": "^2.24.0",
     "morgan": "~1.9.1",
     "mysql2": "^2.1.0",
+    "node-watch": "^0.6.3",
     "pug": "2.0.0-beta11",
-    "slack-events-listener": "^1.1.0"
+    "slack-events-listener": "^1.1.0",
+    "winston": "^3.2.1"
   },
   "devDependencies": {
     "@babel/core": "^7.7.7",

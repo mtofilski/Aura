@@ -1,20 +1,39 @@
 import connection from './mysql-connector';
-import { today, tomorrow } from '../Domain/Utils/Time';
+import { dailyRange, monthlyRange } from '../Domain/Utils/Time';
 import GiverNotFoundException from './Exception/GiverNotFoundException';
 
 const GiverViewAPI = {
   load: async (giver) => {
-    const dateFrom = `${today()} 00:00:00`;
-    const dateTo = `${tomorrow()} 00:00:00`;
+    const { start, end } = dailyRange();
 
     const result = await connection.promise().execute(
       'SELECT id, giver, amount FROM giver_view WHERE giver = ? AND created >= ? AND created < ?',
-      [giver, dateFrom, dateTo],
+      [giver, start, end],
     );
     if (result[0].length === 0) {
       throw new GiverNotFoundException(giver);
     }
     return result[0][0];
+  },
+
+  loadDaily: async () => {
+    const { start, end } = dailyRange();
+
+    const result = await connection.promise().execute(
+      'SELECT giver, SUM(amount) as amount FROM giver_view WHERE created >= ? AND created < ? GROUP BY giver ORDER BY amount DESC',
+      [start, end],
+    );
+    return result[0];
+  },
+
+  loadMonthly: async () => {
+    const { start, end } = monthlyRange();
+
+    const result = await connection.promise().execute(
+      'SELECT giver, SUM(amount) as  amount FROM giver_view WHERE created >= ? AND created < ? GROUP BY giver ORDER BY amount DESC',
+      [start, end],
+    );
+    return result[0];
   },
 
   create: (giver, amount) => {
