@@ -1,3 +1,4 @@
+import moment from 'moment';
 import connection from './mysql-connector';
 import { dailyRange, monthlyRange } from '../Domain/Utils/Time';
 import ReceiverNotFoundException from './Exception/ReceiverNotFoundException';
@@ -46,8 +47,14 @@ const ReceiverViewAPI = {
 
   save: (receiver, amount) => {
     connection.execute(
-      'UPDATE receiver_view SET amount = ? WHERE receiver = ?',
-      [amount, receiver],
+      'UPDATE receiver_view SET amount = ?, modified = ? WHERE receiver = ? AND created >= ? AND created < ?',
+      [
+        amount,
+        moment().format('YYYY-MM-DD HH:mm:ss'),
+        receiver,
+        moment().format('YYYY-MM-DD 00:00:00'),
+        moment().add(1, 'day').format('YYYY-MM-DD 00:00:00'),
+      ],
     );
   },
 };

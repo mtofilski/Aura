@@ -51,8 +51,8 @@ const LeaderboardMessage = ({
   context, payload, month, receiversMonthly, giversMonthly, receiversDaily, giversDaily,
 }) => ({
   token: context.botToken,
-  channel: payload.channel_id,
-  user: payload.user_id,
+  channel: payload.channel,
+  user: payload.user,
   blocks: [
     monthlyLeaderboard({ receiversMonthly, giversMonthly, month }),
     divider,

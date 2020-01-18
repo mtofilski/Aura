@@ -1,17 +1,20 @@
 import { App } from '@slack/bolt';
 import Logger from '../Infrastructure/Logger';
 import { rewardUsers, getLeaderBoard } from '../Domain/Service/RewardService';
-import LeaderBoardMessage from './Messages/LeaderboardMessage';
+import LeaderboardMessage from './Messages/LeaderboardMessage';
 import RewardGivenMessage from './Messages/RewardGivenMessage';
 import RewardReceiveMessage from './Messages/RewardReceiveMessage';
 import LeaderboardDTO from '../Domain/DTO/LeaderboardDTO';
+import NoBotMessage from '../Domain/Middleware/NoBotMessage';
+import NoRewardForBot from '../Domain/Middleware/NoRewardForBot';
+import BotMessage from '../Domain/Middleware/BotMessage';
 
 const app = new App({
   token: process.env.SLACK_BOT_TOKEN,
   signingSecret: process.env.SLACK_SIGNING_SECRET,
 });
 
-app.message(':taco:', async ({ message, say, context }) => {
+app.message(NoBotMessage, NoRewardForBot, ':taco:', async ({ message, say, context }) => {
   let rewardsAmount = 0;
   const users = [];
   message.blocks.forEach((block) => {
@@ -43,13 +46,11 @@ app.message(':taco:', async ({ message, say, context }) => {
   });
 });
 
-app.command('/show-tacos', async ({
-  say, ack, context, payload,
+app.message(BotMessage, 'leaderboard', async ({
+  payload, say, context,
 }) => {
-  ack();
-
   getLeaderBoard().then(({ daily, monthly }) => {
-    app.client.chat.postEphemeral(LeaderBoardMessage({
+    app.client.chat.postMessage(LeaderboardMessage({
       ...LeaderboardDTO({ daily, monthly }),
       context,
       payload,

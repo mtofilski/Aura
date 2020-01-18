@@ -1,3 +1,4 @@
+import moment from 'moment';
 import connection from './mysql-connector';
 import { dailyRange, monthlyRange } from '../Domain/Utils/Time';
 import GiverNotFoundException from './Exception/GiverNotFoundException';
@@ -45,8 +46,14 @@ const GiverViewAPI = {
 
   save: (giver, amount) => {
     connection.execute(
-      'UPDATE giver_view SET amount = ? WHERE giver = ?',
-      [amount, giver],
+      'UPDATE giver_view SET amount = ?, modified = ? WHERE giver = ? AND created >= ? AND created < ?',
+      [
+        amount,
+        moment().format('YYYY-MM-DD HH:mm:ss'),
+        giver,
+        moment().format('YYYY-MM-DD 00:00:00'),
+        moment().add(1, 'day').format('YYYY-MM-DD 00:00:00'),
+      ],
     );
   },
 };
