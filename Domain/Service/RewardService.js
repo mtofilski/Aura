@@ -42,7 +42,7 @@ const rewardUsers = async (giver, receivers, amount) => {
 
   try {
     const giverFromDB = await GiverViewAPI.load(giver);
-    GiverViewAPI.save(giver, parseInt(giverFromDB.amount, 2) + amount);
+    GiverViewAPI.save(giver, Number.parseInt(giverFromDB.amount, 10) + amount);
   } catch (e) {
     if (e instanceof GiverNotFoundException) {
       GiverViewAPI.create(giver, amount);
@@ -50,10 +50,10 @@ const rewardUsers = async (giver, receivers, amount) => {
       throw e;
     }
   }
-  for (const receiver of uniqueReceivers) {
+  uniqueReceivers.forEach(async (receiver) => {
     try {
       const receiverFromDB = await ReceiverViewAPI.load(receiver);
-      ReceiverViewAPI.save(receiver, parseInt(receiverFromDB.amount, 2) + amount);
+      ReceiverViewAPI.save(receiver, parseInt(receiverFromDB.amount, 10) + amount);
     } catch (e) {
       if (e instanceof ReceiverNotFoundException) {
         ReceiverViewAPI.create(receiver, amount);
@@ -61,7 +61,7 @@ const rewardUsers = async (giver, receivers, amount) => {
         throw e;
       }
     }
-  }
+  });
 
   return uniqueReceivers;
 };
