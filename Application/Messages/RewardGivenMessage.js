@@ -3,7 +3,7 @@ const RewardGivenMessage = ({
 }) => ({
   token: context.botToken,
   channel: message.user,
-  text: `Thanks <@${message.user}> for giving :taco: to ${usersAsString.join(', ')} !`,
+  text: `Thanks <@${message.user}> for giving :taco: to ${usersAsString.join(', ')}, you're awesome !`,
 });
 
 

@@ -1,7 +1,7 @@
 import { App, LogLevel } from '@slack/bolt';
 import Logger from '../Infrastructure/Logger';
 import { rewardUsers, getLeaderBoard } from '../Domain/Service/RewardService';
-import LeaderboardMessage from './Messages/LeaderboardMessage';
+import LeaderboardMessage, {LeaderboardCronMessage} from './Messages/LeaderboardMessage';
 import RewardGivenMessage from './Messages/RewardGivenMessage';
 import RewardReceiveMessage from './Messages/RewardReceiveMessage';
 import WelcomeMessage from './Messages/WelcomeMessage';
@@ -11,6 +11,7 @@ import NoBotMessage from '../Domain/Middleware/NoBotMessage';
 import NoRewardForBot from '../Domain/Middleware/NoRewardForBot';
 import BotMessage from '../Domain/Middleware/BotMessage';
 import OnlyCreatedMessage from '../Domain/Middleware/OnlyCreatedMessage';
+import Cron from 'node-cron';
 
 const app = new App({
   token: process.env.SLACK_BOT_TOKEN,
@@ -67,6 +68,20 @@ app.message(OnlyCreatedMessage, BotMessage, 'leaderboard', async ({
     say('sorka! coś nie pykło.');
   });
 });
+
+Cron.schedule("00 12 * * 5", function() {
+  getLeaderBoard().then(({ daily, monthly }) => {
+    app.client.chat.postMessage(LeaderboardCronMessage({
+      ...LeaderboardDTO({ daily, monthly }),
+      token: process.env.SLACK_BOT_TOKEN,
+      channel: 'general',
+    })).catch(error => {
+      Logger.error(error);
+    });
+  }).catch(error => {
+    Logger.error(error);
+  });
+}, {});
 
 app.message(OnlyCreatedMessage, BotMessage, 'help', async ({ say }) => {
   say(WelcomeMessage.welcome);

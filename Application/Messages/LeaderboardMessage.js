@@ -61,5 +61,22 @@ const LeaderboardMessage = ({
   ],
 });
 
+const LeaderboardCronMessage = ({
+    token, channel, month, receiversMonthly, giversMonthly, receiversDaily, giversDaily,
+  }) => ({
+  token: token,
+  channel: channel,
+  text: 'Taco weekly !',
+  blocks: [
+    monthlyLeaderboard({ receiversMonthly, giversMonthly, month }),
+    divider,
+    dailyLeaderboard({ receiversDaily, giversDaily }),
+    divider,
+  ],
+});
 
-export { LeaderboardMessage as default };
+
+export {
+  LeaderboardMessage as default,
+  LeaderboardCronMessage
+};
