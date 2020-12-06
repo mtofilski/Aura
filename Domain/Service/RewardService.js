@@ -34,7 +34,8 @@ const removeReceiverDuplicates = (giver, receivers) => {
 
 const rewardUsers = async (giver, receivers, amount) => {
   const uniqueReceivers = removeReceiverDuplicates(giver, receivers);
-  await checkGivingLimit(giver, uniqueReceivers.length * amount, 5);
+  const rewardsAmount = uniqueReceivers.length * amount;
+  await checkGivingLimit(giver, rewardsAmount, 5);
 
   uniqueReceivers.forEach((receiver) => {
     RewardAPI.save(giver, receiver, amount);
@@ -42,10 +43,10 @@ const rewardUsers = async (giver, receivers, amount) => {
 
   try {
     const giverFromDB = await GiverViewAPI.load(giver);
-    GiverViewAPI.save(giver, Number.parseInt(giverFromDB.amount, 10) + amount);
+    GiverViewAPI.save(giver, Number.parseInt(giverFromDB.amount, 10) + rewardsAmount);
   } catch (e) {
     if (e instanceof GiverNotFoundException) {
-      GiverViewAPI.create(giver, amount);
+      GiverViewAPI.create(giver, rewardsAmount);
     } else {
       throw e;
     }
